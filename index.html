@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Bio Detective</title>
+
+  <style>
+
+    * {
+
+      box-sizing: border-box;
+
+    }
+
+    body {
+
+      margin: 0;
+
+      min-height: 100vh;
+
+      font-family: Arial, Helvetica, sans-serif;
+
+      background: linear-gradient(135deg, #071b2b, #0d3b4c);
+
+      color: white;
+
+      display: flex;
+
+      justify-content: center;
+
+      align-items: center;
+
+      padding: 20px;
+
+    }
+
+    .game {
+
+      width: 100%;
+
+      max-width: 800px;
+
+      background: rgba(255, 255, 255, 0.10);
+
+      border: 1px solid rgba(255, 255, 255, 0.20);
+
+      border-radius: 24px;
+
+      padding: 32px;
+
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+
+    }
+
+    h1 {
+
+      text-align: center;
+
+      font-size: 42px;
+
+      margin: 0 0 8px;
+
+    }
+
+    .subtitle {
+
+      text-align: center;
+
+      color: #c9e7ee;
+
+      margin-bottom: 30px;
+
+    }
+
+    .top-bar {
+
+      display: flex;
+
+      justify-content: space-between;
+
+      font-weight: bold;
+
+      color: #c9e7ee;
+
+    }
+
+    .progress-container {
+
+      width: 100%;
+
+      height: 9px;
+
+      background: rgba(255, 255, 255, 0.15);
+
+      border-radius: 20px;
+
+      margin: 15px 0 30px;
+
+      overflow: hidden;
+
+    }
+
+    .progress {
+
+      height: 100%;
+
+      width: 0%;
+
+      background: #66d9c4;
+
+      transition: width 0.3s ease;
+
+    }
+
+    .question {
+
+      font-size: 24px;
+
+      line-height: 1.4;
+
+      margin-bottom: 25px;
+
+    }
+
+    .choices {
+
+      display: grid;
+
+      gap: 12px;
+
+    }
+
+    .choice {
+
+      width: 100%;
+
+      padding: 16px;
+
+      border-radius: 14px;
+
+      border: 1px solid rgba(255, 255, 255, 0.25);
+
+      background: rgba(255, 255, 255, 0.08);
+
+      color: white;
+
+      font-size: 17px;
+
+      text-align: left;
+
+      cursor: pointer;
+
+      transition: 0.15s;
+
+    }
+
+    .choice:hover:not(:disabled) {
+
+      background: rgba(255, 255, 255, 0.18);
+
+      transform: translateY(-2px);
+
+    }
+
+    .choice:disabled {
+
+      cursor: default;
+
+    }
+
+    .correct {
+
+      background: rgba(54, 211, 153, 0.30) !important;
+
+      border-color: #36d399 !important;
+
+    }
+
+    .wrong {
+
+      background: rgba(248, 113, 113, 0.30) !important;
+
+      border-color: #f87171 !important;
+
+    }
+
+    .feedback {
+
+      min-height: 55px;
+
+      margin-top: 20px;
+
+      line-height: 1.5;
+
+      font-weight: bold;
+
+    }
+
+    button.next,
+
+    button.restart {
+
+      border: none;
+
+      border-radius: 12px;
+
+      padding: 14px 22px;
+
+      background: #66d9c4;
+
+      color: #06252b;
+
+      font-size: 16px;
+
+      font-weight: bold;
+
+      cursor: pointer;
+
+    }
+
+    button.next:hover,
+
+    button.restart:hover {
+
+      opacity: 0.9;
+
+    }
+
+    .hidden {
+
+      display: none;
+
+    }
+
+    .result {
+
+      text-align: center;
+
+    }
+
+    .result h2 {
+
+      font-size: 38px;
+
+    }
+
+    .score {
+
+      font-size: 70px;
+
+      font-weight: bold;
+
+      margin: 20px;
+
+    }
+
+    .message {
+
+      color: #c9e7ee;
+
+      font-size: 18px;
+
+      margin-bottom: 30px;
+
+    }
+
+    @media (max-width: 600px) {
+
+      .game {
+
+        padding: 22px;
+
+      }
+
+      h1 {
+
+        font-size: 34px;
+
+      }
+
+      .question {
+
+        font-size: 20px;
+
+      }
+
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+  <main class="game">
+
+    <!-- QUIZ SCREEN -->
+
+    <section id="quizScreen">
+
+      <h1>🧬 Bio Detective</h1>
+
+      <p class="subtitle">
+
+        Can you identify the organism from the clues?
+
+      </p>
+
+      <div class="top-bar">
+
+        <span>Case File</span>
+
+        <span id="counter">1 / 10</span>
+
+      </div>
+
+      <div class="progress-container">
+
+        <div class="progress" id="progress"></div>
+
+      </div>
+
+      <div class="question" id="question"></div>
+
+      <div class="choices" id="choices"></div>
+
+      <div class="feedback" id="feedback"></div>
+
+      <button class="next hidden" id="nextButton">
+
+        Next Case →
+
+      </button>
+
+    </section>
+
+    <!-- RESULTS SCREEN -->
+
+    <section id="resultScreen" class="result hidden">
+
+      <h2>🔬 Case Closed!</h2>
+
+      <div class="score" id="finalScore"></div>
+
+      <p class="message" id="finalMessage"></p>
+
+      <button class="restart" id="restartButton">
+
+        Investigate Again
+
+      </button>
+
+    </section>
+
+  </main>
+
+  <script>
+
+    const questions = [
+
+      {
+
+        question:
+
+          "I am a single-celled organism with no membrane-bound nucleus. My DNA is located in a nucleoid region. Who am I?",
+
+        choices: [
+
+          "Bacterium",
+
+          "Fungus",
+
+          "Plant",
+
+          "Protozoan"
+
+        ],
+
+        correct: 0,
+
+        explanation:
+
+          "Bacteria are prokaryotes, meaning their DNA is not enclosed inside a membrane-bound nucleus."
+
+      },
+
+      {
+
+        question:
+
+          "I use sunlight to produce my own food through photosynthesis. My cells contain chloroplasts. Who am I?",
+
+        choices: [
+
+          "Mushroom",
+
+          "Plant",
+
+          "Animal",
+
+          "Earthworm"
+
+        ],
+
+        correct: 1,
+
+        explanation:
+
+          "Plants contain chloroplasts and use photosynthesis to convert light energy into chemical energy."
+
+      },
+
+      {
+
+        question:
+
+          "I am a multicellular organism whose cell walls contain chitin. I obtain nutrients by absorbing them from my surroundings. Who am I?",
+
+        choices: [
+
+          "Animal",
+
+          "Fungus",
+
+          "Plant",
+
+          "Fish"
+
+        ],
+
+        correct: 1,
+
+        explanation:
+
+          "Fungi have cell walls containing chitin and obtain nutrients through absorption."
+
+      },
+
+      {
+
+        question:
+
+          "I am a vertebrate that commonly begins life in water and later develops the ability to live on land. What group am I?",
+
+        
+
+        choices: [
+
+          "Mammal",
+
+          "Reptile",
+
+          "Amphibian",
+
+          "Bird"
+
+        ],
+
+        correct: 2,
+
+        explanation:
+
+          "Amphibians, such as frogs, commonly have aquatic larval stages followed by terrestrial adult stages."
+
+      },
+
+      {
+
+        question:
+
+          "I have a backbone, produce milk for my young, and generally have hair or fur. What am I?",
+
+        choices: [
+
+          "Mammal",
+
+          "Fish",
+
+          "Insect",
+
+          "Mollusk"
+
+        ],
+
+        correct: 0,
+
+        explanation:
+
+          "Mammals are vertebrates characterized by features including mammary glands and hair or fur."
+
+      },
+
+      {
+
+        question:
+
+          "I am a microscopic eukaryote that moves using many tiny hair-like structures called cilia. Who am I?",
+
+        choices: [
+
+          "Paramecium",
+
+          "Pine tree",
+
+          "Earthworm",
+
+          "Bacterium"
+
+        ],
+
+        correct: 0,
+
+        explanation:
+
+          "Paramecium is a unicellular protist that uses cilia for movement."
+
+      },
+
+      {
+
+        question:
+
+          "I have eight legs and two main body regions. Spiders belong to my group. What am I?",
+
+        choices: [
+
+          "Insect",
+
+          "Arachnid",
+
+          "Crustacean",
+
+          "Mollusk"
+
+        ],
+
+        correct: 1,
+
+        explanation:
+
+          "Arachnids include spiders and typically have eight legs and two main body regions."
+
+      },
+
+      {
+
+        question:
+
+          "I am sometimes called blue-green algae, but I am actually a photosynthetic bacterium. What am I?",
+
+        choices: [
+
+          "Cyanobacterium",
+
+          "Yeast",
+
+          "Amoeba",
+
+          "Roundworm"
+
+        ],
+
+        correct: 0,
+
+        explanation:
+
+          "Cyanobacteria are photosynthetic bacteria. The term 'blue-green algae' is an older common name."
+
+      },
+
+      {
+
+        question:
+
+          "I have scales, breathe using gills, and live entirely in water. Which group best describes me?",
+
+        choices: [
+
+          "Mammal",
+
+          "Fish",
+
+          "Amphibian",
+
+          "Bird"
+
+        ],
+
+        correct: 1,
+
+        explanation:
+
+          "Fish are aquatic vertebrates that typically breathe through gills and have scales."
+
+      },
+
+      {
+
+        question:
+
+          "I am an animal with six legs, three main body regions, and often one or two pairs of wings. What am I?",
+
+        choices: [
+
+          "Arachnid",
+
+          "Insect",
+
+          "Mollusk",
+
+          "Amphibian"
+
+        ],
+
+        correct: 1,
+
+        explanation:
+
+          "Insects have six legs and three major body regions: head, thorax, and abdomen."
+
+      }
+
+    ];
+
+    let currentQuestion = 0;
+
+    let score = 0;
+
+    let answered = false;
+
+    const questionElement =
+
+      document.getElementById("question");
+
+    const choicesElement =
+
+      document.getElementById("choices");
+
+    const feedbackElement =
+
+      document.getElementById("feedback");
+
+    const counterElement =
+
+      document.getElementById("counter");
+
+    const progressElement =
+
+      document.getElementById("progress");
+
+    const nextButton =
+
+      document.getElementById("nextButton");
+
+    const quizScreen =
+
+      document.getElementById("quizScreen");
+
+    const resultScreen =
+
+      document.getElementById("resultScreen");
+
+    const finalScore =
+
+      document.getElementById("finalScore");
+
+    const finalMessage =
+
+      document.getElementById("finalMessage");
+
+    const restartButton =
+
+      document.getElementById("restartButton");
+
+    function showQuestion() {
+
+      answered = false;
+
+      const question = questions[currentQuestion];
+
+      counterElement.textContent =
+
+        `${currentQuestion + 1} / ${questions.length}`;
+
+      progressElement.style.width =
+
+        `${(currentQuestion / questions.length) * 100}%`;
+
+      questionElement.textContent =
+
+        question.question;
+
+      choicesElement.innerHTML = "";
+
+      feedbackElement.textContent = "";
+
+      nextButton.classList.add("hidden");
+
+      question.choices.forEach((choice, index) => {
+
+        const button =
+
+          document.createElement("button");
+
+        button.className = "choice";
+
+        button.textContent = choice;
+
+        button.addEventListener("click", () => {
+
+          selectAnswer(index, button);
+
+        });
+
+        choicesElement.appendChild(button);
+
+      });
+
+    }
+
+    function selectAnswer(selectedIndex, selectedButton) {
+
+      if (answered) {
+
+        return;
+
+      }
+
+      answered = true;
+
+      const question =
+
+        questions[currentQuestion];
+
+      const allButtons =
+
+        document.querySelectorAll(".choice");
+
+      allButtons.forEach((button, index) => {
+
+        button.disabled = true;
+
+        if (index === question.correct) {
+
+          button.classList.add("correct");
+
+        }
+
+      });
+
+      if (selectedIndex === question.correct) {
+
+        score++;
+
+        selectedButton.classList.add("correct");
+
+        feedbackElement.textContent =
+
+          "✓ Correct! " + question.explanation;
+
+      } else {
+
+        selectedButton.classList.add("wrong");
+
+        feedbackElement.textContent =
+
+          "✗ Not quite. " + question.explanation;
+
+      }
+
+      progressElement.style.width =
+
+        `${((currentQuestion + 1) / questions.length) * 100}%`;
+
+      nextButton.classList.remove("hidden");
+
+    }
+
+    nextButton.addEventListener("click", () => {
+
+      currentQuestion++;
+
+      if (currentQuestion < questions.length) {
+
+        showQuestion();
+
+      } else {
+
+        showResults();
+
+      }
+
+    });
+
+    function showResults() {
+
+      quizScreen.classList.add("hidden");
+
+      resultScreen.classList.remove("hidden");
+
+      finalScore.textContent =
+
+        `${score} / ${questions.length}`;
+
+      if (score === questions.length) {
+
+        finalMessage.textContent =
+
+          "Perfect investigation! You solved every case.";
+
+      } else if (score >= 8) {
+
+        finalMessage.textContent =
+
+          "Excellent work, Detective! Your biology knowledge is impressive.";
+
+      } else if (score >= 6) {
+
+        finalMessage.textContent =
+
+          "Great investigation! You have strong biology instincts.";
+
+      } else if (score >= 4) {
+
+        finalMessage.textContent =
+
+          "Good work! Keep studying and your detective skills will improve.";
+
+      } else {
+
+        finalMessage.textContent =
+
+          "Every great scientist starts somewhere. Investigate again and improve your score!";
+
+      }
+
+    }
+
+    restartButton.addEventListener("click", () => {
+
+      currentQuestion = 0;
+
+      score = 0;
+
+      resultScreen.classList.add("hidden");
+
+      quizScreen.classList.remove("hidden");
+
+      showQuestion();
+
+    });
+
+    // Start the game
+
+    showQuestion();
+
+  </script>
+
+</body>
+
+</html>
